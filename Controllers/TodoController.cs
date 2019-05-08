@@ -38,21 +38,6 @@ namespace MosaicExercise.Controllers
             return todoItems;
         }
 
-        private Dictionary<Guid, Models.TodoModel> UpdateCollection(Guid id, Func<Models.TodoModel, Models.TodoModel> action)
-        {
-            Dictionary<Guid, Models.TodoModel> todoItems = Retrieve();
-            if (todoItems == null)
-            {
-                todoItems = InitSession();
-            }
-
-            todoItems[id] = action(todoItems[id]);
-
-            Store(todoItems);
-
-            return todoItems;
-        }
-
         public string Create(string text)
         {
             Models.TodoModel newTodo = new Models.TodoModel(text, Guid.NewGuid());
