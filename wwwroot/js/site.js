@@ -8,7 +8,6 @@ function delete_todo(id) {
         url: "/todo/delete?id=" + id,
         success: (data) => {
             render(data["todoItems"])
-            ; console.log(data)
         },
         dataType: "json"
     })
@@ -19,7 +18,6 @@ function toggle_todo(id) {
         url: "/todo/toggle?id=" + id,
         success: (data) => {
             render(data["todoItems"])
-            ; console.log(data)
         },
         dataType: "json"
     })
@@ -32,7 +30,6 @@ function create_todo(input, refocus = false) {
         dataType: "json",
         success: (data) => {
             render(data["todoItems"], refocus)
-            ; console.log(data)
         }
     })
 }
@@ -46,7 +43,6 @@ function refresh_data_and_refocus() {
                 render([], true)
             }
             render(data["todoItems"], true)
-            ; console.log(data)
         }
     })
 }
