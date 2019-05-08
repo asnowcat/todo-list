@@ -7,8 +7,7 @@ function delete_todo(id) {
     $.ajax({
         url: "/todo/delete?id=" + id,
         success: (data) => {
-            render(data["todoItems"]);
-            console.log(data["todoItems"])
+            render(data["todoItems"])
         },
         dataType: "json"
     })
@@ -18,8 +17,7 @@ function toggle_todo(id) {
     $.ajax({
         url: "/todo/toggle?id=" + id,
         success: (data) => {
-            render(data["todoItems"]);
-            console.log(data["todoItems"])
+            render(data["todoItems"])
         },
         dataType: "json"
     })
@@ -31,8 +29,7 @@ function create_todo(input, refocus = false) {
         url: "/todo/create?text=" + text,
         dataType: "json",
         success: (data) => {
-            render(data["todoItems"], refocus);
-            console.log(data["todoItems"])
+            render(data["todoItems"], refocus)
         }
     })
 }
