@@ -8,6 +8,7 @@ function delete_todo(id) {
         url: "/todo/delete?id=" + id,
         success: (data) => {
             render(data["todoItems"])
+            ; console.log(data)
         },
         dataType: "json"
     })
@@ -18,6 +19,7 @@ function toggle_todo(id) {
         url: "/todo/toggle?id=" + id,
         success: (data) => {
             render(data["todoItems"])
+            ; console.log(data)
         },
         dataType: "json"
     })
@@ -30,6 +32,7 @@ function create_todo(input, refocus = false) {
         dataType: "json",
         success: (data) => {
             render(data["todoItems"], refocus)
+            ; console.log(data)
         }
     })
 }
@@ -43,6 +46,7 @@ function refresh_data_and_refocus() {
                 render([], true)
             }
             render(data["todoItems"], true)
+            ; console.log(data)
         }
     })
 }
@@ -106,11 +110,11 @@ function render_delete_button(id) {
 function render_todo_item(todo) {
     let row = document.createElement("div")
     row.className += " form-inline todo-item my-2 mx-auto d-block"
-    row.id = "todo-item-" + todo["Index"].toString()
+    //row.id = "todo-item--" + todo.ID
 
-    let checkbox = render_checkbox(todo["Index"])
-    let label = render_label(todo["Text"])
-    let delete_button = render_delete_button(todo["Index"])
+    let checkbox = render_checkbox(todo.ID)
+    let label = render_label(todo.Text)
+    let delete_button = render_delete_button(todo.ID)
 
     checkbox.className += " form-control"
     label.className += " form-control"
@@ -119,11 +123,6 @@ function render_todo_item(todo) {
     if (todo["Done"]) {
         checkbox.setAttribute("checked", "true")
         label.setAttribute("style", label.getAttribute("style") + " text-decoration: line-through;")
-    }
-
-    if (todo["Deleted"]) {
-        row.className = row.className.split(" ").filter((x) => x !== "d-block").join(" ")
-        row.setAttribute("hidden", "true")
     }
 
     row.appendChild(checkbox)
@@ -138,9 +137,6 @@ function focus_text_input() {
 }
 
 function render(todoItems, refocus = false) {
-    for (let i = 0; i < todoItems.length; i++) {
-        todoItems[i]["Index"] = i
-    }
     let rows = todoItems.map(render_todo_item)
     let list = document.createElement("div")
     list.className += " d-block mx-auto"
@@ -158,5 +154,4 @@ function render(todoItems, refocus = false) {
     }
 }
 
-window.onfocus = refresh_data_and_refocus
 window.onload = refresh_data_and_refocus

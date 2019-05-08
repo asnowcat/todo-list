@@ -6,15 +6,19 @@ namespace MosaicExercise.Models
     public class TodoModel
     {
         private string todoText;
-
-        public TodoModel(string text) => Text = text;
-
-        public string Text { 
+        public bool Done { get; set; }
+        public Guid ID { get; set; }
+        public string Text
+        {
             get => todoText;
             set => todoText = value;
         }
-        
-        public bool Done { get; set; } = false;
-        public bool Deleted { get; set; } = false;
+
+        public TodoModel(string text, Guid g)
+        {
+            this.Text = text;
+            this.ID = g;
+            this.Done = false;
+        }
     }
 }

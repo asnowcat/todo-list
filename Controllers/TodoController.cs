@@ -9,15 +9,23 @@ namespace MosaicExercise.Controllers
 {
     public class TodoController : Controller
     {
-        private List<Models.TodoModel> InitSession()
+        private Dictionary<Guid, Models.TodoModel> Retrieve() {
+            return HttpContext.Session.Get<Dictionary<Guid, Models.TodoModel>>("todoItems");
+        }
+        private void Store(Dictionary<Guid, Models.TodoModel> dict) {
+            HttpContext.Session.Set<Dictionary<Guid, Models.TodoModel>>("todoItems", dict);
+        }
+
+        private Dictionary<Guid, Models.TodoModel> InitSession()
         {
-            var todoItems = new List<Models.TodoModel>();
-            HttpContext.Session.Set<List<Models.TodoModel>>("todoItems", todoItems);
+            var todoItems = new Dictionary<Guid, Models.TodoModel>();
+            Store(todoItems);
             return todoItems;
         }
-        private List<Models.TodoModel> Update(int id, Func<Models.TodoModel, Models.TodoModel> action)
+        
+        private Dictionary<Guid, Models.TodoModel> Update(Guid id, Func<Models.TodoModel, Models.TodoModel> action)
         {
-            List<Models.TodoModel> todoItems = HttpContext.Session.Get<List<Models.TodoModel>>("todoItems");
+            Dictionary<Guid, Models.TodoModel> todoItems = Retrieve();
             if (todoItems == null)
             {
                 todoItems = InitSession();
@@ -25,51 +33,90 @@ namespace MosaicExercise.Controllers
 
             todoItems[id] = action(todoItems[id]);
 
-            HttpContext.Session.Set<List<Models.TodoModel>>("todoItems", todoItems);
+            Store(todoItems);
 
             return todoItems;
         }
-        public string Create(string text)
-        {
-            Models.TodoModel newTodo = new Models.TodoModel(text);
 
-            List<Models.TodoModel> todoItems = HttpContext.Session.Get<List<Models.TodoModel>>("todoItems");
+        private Dictionary<Guid, Models.TodoModel> UpdateCollection(Guid id, Func<Models.TodoModel, Models.TodoModel> action)
+        {
+            Dictionary<Guid, Models.TodoModel> todoItems = Retrieve();
             if (todoItems == null)
             {
                 todoItems = InitSession();
             }
-            todoItems.Add(newTodo);
 
-            HttpContext.Session.Set<List<Models.TodoModel>>("todoItems", todoItems);
+            todoItems[id] = action(todoItems[id]);
 
-            return "{\"todoItems\":" + JsonConvert.SerializeObject(todoItems) + "}";
+            Store(todoItems);
+
+            return todoItems;
         }
 
-        public string Delete(int id)
+        public string Create(string text)
         {
-            // Flip deletion flag on todo item (soft delete)
-            Func<Models.TodoModel, Models.TodoModel> delete = (todo) => { todo.Deleted = !todo.Deleted; return todo; };
+            Models.TodoModel newTodo = new Models.TodoModel(text, Guid.NewGuid());
 
-            var todoItems = Update(id, delete);
+            Dictionary<Guid, Models.TodoModel> todoItems = Retrieve();
+            if (todoItems == null)
+            {
+                todoItems = InitSession();
+            }
+            todoItems.Add(newTodo.ID, newTodo);
 
-            return "{\"todoItems\":" + JsonConvert.SerializeObject(todoItems) + "}";
+            Store(todoItems);
+
+            return "{\"todoItems\":" + JsonConvert.SerializeObject(todoItems.Values) + "}";
         }
 
-        public string Toggle(int id)
+        public string Delete(string id)
         {
+            var response = new Dictionary<string, dynamic>();
+
+            Dictionary<Guid, Models.TodoModel> todoItems = Retrieve();
+            if (todoItems == null)
+            {
+                todoItems = InitSession();
+            }
+
+
+            Guid guid = Guid.Parse(id);
+            response["deleted"] = todoItems[guid];
+            response["todoItems"] = todoItems.Values;
+            todoItems.Remove(guid);
+
+            Store(todoItems);
+
+            return JsonConvert.SerializeObject(response);
+        }
+
+        public string Toggle(string id)
+        {
+            var response = new Dictionary<string, dynamic>();
+
             // Flip completion flag on todo item
-            Func<Models.TodoModel, Models.TodoModel> delete = (todo) => { todo.Done = !todo.Done; return todo; };
+            Func<Models.TodoModel, Models.TodoModel> toggle = (todo) => { todo.Done = !todo.Done; return todo; };
 
-            var todoItems = Update(id, delete);
+            Guid guid = Guid.Parse(id);
+            var todoItems = Update(guid, toggle);
+            response["toggled"] = todoItems[guid];
+            response["todoItems"] = todoItems.Values;
 
-            return "{\"todoItems\":" + JsonConvert.SerializeObject(todoItems) + "}";
+            return JsonConvert.SerializeObject(response);
         }
-
         public string Index()
         {
-            var todoItems = HttpContext.Session.Get<List<Models.TodoModel>>("todoItems");
+            var response = new Dictionary<string, dynamic>();
 
-            return "{\"todoItems\":" + JsonConvert.SerializeObject(todoItems) + "}";
+            var todoItems = Retrieve();
+            if (todoItems == null)
+            {
+                todoItems = InitSession();
+            }
+
+            response["todoItems"] = todoItems.Values;
+
+            return JsonConvert.SerializeObject(response);
         }
     }
 }
