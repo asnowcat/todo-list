@@ -64,5 +64,12 @@ namespace MosaicExercise.Controllers
 
             return "{\"todoItems\":" + JsonConvert.SerializeObject(todoItems) + "}";
         }
+
+        public string Index()
+        {
+            var todoItems = HttpContext.Session.Get<List<Models.TodoModel>>("todoItems");
+
+            return "{\"todoItems\":" + JsonConvert.SerializeObject(todoItems) + "}";
+        }
     }
 }

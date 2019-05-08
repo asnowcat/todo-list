@@ -34,6 +34,19 @@ function create_todo(input, refocus = false) {
     })
 }
 
+function refresh_data_and_refocus() {
+    $.ajax({
+        url: "/todo",
+        dataType: "json",
+        success: (data) => {
+            if (!data["todoItems"]) {
+                render([], true)
+            }
+            render(data["todoItems"], true)
+        }
+    })
+}
+
 function render_text_input() {
     let parent = document.createElement("div")
     parent.className += " d-block form-inline my-5"
@@ -141,8 +154,9 @@ function render(todoItems, refocus = false) {
     root.appendChild(list)
 
     if (refocus) {
-        document.getElementById('todo-text-input').focus()
+        focus_text_input()
     }
 }
 
-render([])
+window.onfocus = refresh_data_and_refocus
+window.onload = refresh_data_and_refocus
