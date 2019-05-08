@@ -3,7 +3,6 @@
 
 // Write your JavaScript code.
 
-
 function delete_todo(id) {
     $.ajax({
         url: "/todo/delete?id=" + id,
@@ -26,50 +25,48 @@ function toggle_todo(id) {
     })
 }
 
-function create_todo(input) {
+function create_todo(input, refocus = false) {
     text = encodeURIComponent(input.value)
     $.ajax({
         url: "/todo/create?text=" + text,
+        dataType: "json",
         success: (data) => {
-            render(data["todoItems"]);
+            render(data["todoItems"], refocus);
             console.log(data["todoItems"])
-        },
-        dataType: "json"
+        }
     })
 }
 
 function render_text_input() {
     let parent = document.createElement("div")
-    parent.className += " container"
-    let row = document.createElement("div")
- 
+    parent.className += " d-block form-inline my-5"
+
     let input = document.createElement("input")
     input.setAttribute("type", "text")
-    input.className += " d-inline"
+    input.className += " form-control d-inline mr-1"
     input.id = "todo-text-input"
 
     let submit_button = document.createElement("button")
-    submit_button.className += " d-inline"
-    submit_button.textContent = "Submit"
+    submit_button.className += " d-inline btn btn-primary"
+    submit_button.textContent = "Add Task"
 
     submit_button.onclick = () => create_todo(input)
     submit_button.onkeydown = () => create_todo(input)
     input.onkeydown = (event) => {
         if (event.key === "Enter") {
-            create_todo(input)
+            create_todo(input, true) // refocus = true
         }
     }
 
-    row.appendChild(input)
-    row.appendChild(submit_button)
-    parent.appendChild(row)
-
+    parent.appendChild(input)
+    parent.appendChild(submit_button)
     return parent
 }
 
 function render_checkbox(id) {
     let checkbox = document.createElement("input")
     checkbox.setAttribute("type", "checkbox")
+    checkbox.className += " form-control mx-2"
 
     checkbox.onclick = () => toggle_todo(id)
     checkbox.onkeydown = () => toggle_todo(id)
@@ -78,14 +75,17 @@ function render_checkbox(id) {
 }
 
 function render_label(text) {
-    let label = document.createElement("p")
+    let label = document.createElement("label")
     label.textContent = text
+    label.style = "min-width: 24rem;"
+    label.className += " mx-2 text-left"
     return label
 }
 
 function render_delete_button(id) {
     let delete_button = document.createElement("button")
-    delete_button.textContent = "Delete"
+    delete_button.textContent = "Remove"
+    delete_button.className += " btn btn-secondary btn-sm mx-2"
 
     delete_button.onclick = () => delete_todo(id)
     delete_button.onkeydown = () => delete_todo(id)
@@ -95,49 +95,45 @@ function render_delete_button(id) {
 
 function render_todo_item(todo) {
     let row = document.createElement("div")
-    row.className += " row"
-    row.className += " todo-item"
+    row.className += " form-inline todo-item my-2 mx-auto d-block"
     row.id = "todo-item-" + todo["Index"].toString()
-
-    let checkbox_cell = document.createElement("div")
-    let label_cell = document.createElement("div")
-    let delete_button_cell = document.createElement("div")
-
-    checkbox_cell.className += " col"
-    label_cell.className += " col"
-    delete_button_cell.className += " col"
 
     let checkbox = render_checkbox(todo["Index"])
     let label = render_label(todo["Text"])
     let delete_button = render_delete_button(todo["Index"])
 
+    checkbox.className += " form-control"
+    label.className += " form-control"
+    delete_button.className += " form-control"
+
     if (todo["Done"]) {
         checkbox.setAttribute("checked", "true")
-        label.setAttribute("style", "text-decoration: line-through;")
+        label.setAttribute("style", label.getAttribute("style") + " text-decoration: line-through;")
     }
 
     if (todo["Deleted"]) {
+        row.className = row.className.split(" ").filter((x) => x !== "d-block").join(" ")
         row.setAttribute("hidden", "true")
     }
 
-    checkbox_cell.appendChild(checkbox)
-    label_cell.appendChild(label)
-    delete_button_cell.appendChild(delete_button)
-
-    row.appendChild(checkbox_cell)
-    row.appendChild(label_cell)
-    row.appendChild(delete_button_cell)
+    row.appendChild(checkbox)
+    row.appendChild(label)
+    row.appendChild(delete_button)
 
     return row
 }
 
-function render(todoItems) {
+function focus_text_input() {
+    document.getElementById('todo-text-input').focus()
+}
+
+function render(todoItems, refocus = false) {
     for (let i = 0; i < todoItems.length; i++) {
         todoItems[i]["Index"] = i
     }
     let rows = todoItems.map(render_todo_item)
     let list = document.createElement("div")
-    list.className += " container pb-3"
+    list.className += " d-block mx-auto"
     $(list).append(rows)
 
     let root = document.getElementById("root")
@@ -146,6 +142,10 @@ function render(todoItems) {
     $(root).empty()
     root.appendChild(text_input)
     root.appendChild(list)
+
+    if (refocus) {
+        document.getElementById('todo-text-input').focus()
+    }
 }
 
 render([])
