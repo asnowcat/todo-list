@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace MosaicExercise
 {
@@ -36,12 +37,12 @@ namespace MosaicExercise
             services.AddSession(options =>
             {
                 // Set a short timeout for easy testing.
-                options.IdleTimeout = TimeSpan.FromSeconds(10);
+                options.IdleTimeout = TimeSpan.FromDays(365);
 
                 // Make the session cookie essential
                 options.Cookie.IsEssential = true;
             });
-            
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -71,5 +72,20 @@ namespace MosaicExercise
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
+    }
+}
+public static class SessionExtensions
+{
+    public static void Set<T>(this ISession session, string key, T value)
+    {
+        session.SetString(key, JsonConvert.SerializeObject(value));
+    }
+
+    public static T Get<T>(this ISession session, string key)
+    {
+        var value = session.GetString(key);
+
+        return value == null ? default(T) :
+            JsonConvert.DeserializeObject<T>(value);
     }
 }
